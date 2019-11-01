@@ -1,0 +1,159 @@
+---
+title: "Class 6 R Functions"
+author: "Fabian Lim"
+date: "10/18/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Test 1
+
+```{r}
+read.table("test1.txt", sep=",", header=TRUE)
+```
+
+```{r}
+read.csv("test1.txt")
+```
+
+
+```{r}
+read.table("test2.txt", sep="$", header = TRUE)
+```
+
+```{r}
+read.table("test3.txt")
+```
+
+Our first silly function
+
+```{r}
+add <- function(x, y=1) {
+ # Sum the input x and y
+ x + y
+}
+```
+```{r}
+add(5)
+```
+
+```{r}
+add(x=c(5,6, 1, 5, 10), y=100)
+```
+
+
+```{r}
+add(c(5, 5, 7))
+```
+
+```{r}
+add(c(5, 5, NA, 7))
+```
+
+
+
+```{r}
+x <- range(c(5, 2, 7, 10))
+x[1] #min value
+x[2] #max value
+```
+
+Second function
+```{r}
+rescale <- function(x) {
+ rng <-range(x)
+ (x - rng[1]) / (rng[2] - rng[1])
+}
+rescale(c(1,10,NA,3,9))
+
+```
+
+```{r}
+rescale2 <- function(x) {
+ rng <-range(x,na.rm=TRUE)
+ (x - rng[1]) / (rng[2] - rng[1])
+}
+rescale2(c(1,10,NA,3,9))
+```
+
+```{r}
+rescale3 <- function(x, na.rm=TRUE, plot=FALSE) {
+ if(na.rm) {
+ rng <-range(x, na.rm=TRUE)
+ } else {
+ rng <-range(x)
+ }
+ print("Hello")
+ answer <- (x - rng[1]) / (rng[2] - rng[1])
+ print("is it me you are looking for?")
+ if(plot) {
+ plot(answer, typ="b", lwd=4)
+ }
+ print("I can see it in ...")
+return(answer)}
+rescale3(1:10)
+```
+
+## Hands on lab
+```{r}
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug
+s2 <- read.pdb("1AKE") # kinase no drug
+s3 <- read.pdb("1E4Y") # kinase with drug
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s3, chain="A", elety="CA")
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor")
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+```
+
+```{r}
+x <- read.pdb("4AKE")
+```
+
+```{r}
+is.list(x)
+x
+```
+
+```{r}
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor", top=FALSE, bot=FALSE)
+```
+
+```{r}
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor", top=FALSE, bot=FALSE)
+points(s2.b,typ="l",col="blue")
+points(s3.b,typ="l",col="red")
+```
+
+```{r}
+hc <- hclust(dist(rbind(s1.b, s2.b, s3.b)))
+plot(hc)
+```
+
+
+## Homework question 6
+
+```{r}
+#Function to generate graph for protein of interest
+plot_protein <- function(x) {
+  sx <- read.pdb(x)
+sx.chainA <- trim.pdb(sx, chain="A", elety="CA")
+sx.b <- sx.chainA$atom$b
+plotb3(sx.b, sse=sx.chainA, typ="l", ylab="Bfactor")
+}
+
+# Example protein is 4AKE
+x <- "4AKE"
+
+# Plot graph
+plot_protein(x)
+```
+

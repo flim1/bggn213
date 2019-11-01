@@ -2,7 +2,7 @@
 title: "Class 7 R functions and packages"
 author: "Fabian Lim"
 date: "10/23/2019"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -43,10 +43,6 @@ rescale(1:10)
 
 ```{r}
 rescale(c(3, 10, NA, 7))
-```
-
-```{r}
-rescale2(c(3, 10, NA, 7, "barry"))
 ```
 
 ```{r}
@@ -91,15 +87,20 @@ both_na(x, y2)
 ```
 
 
-
 ```{r}
-both_na2 <- function(x,y) {
-if(length(x) != length(y)) {
-  stop("Input vectors should be the same length")
+both_na3 <- function(x, y) {
+ if(length(x) != length(y)) {
+ stop("Input x and y should be vectors of the same length")
+ }
+
+ na.in.both <- ( is.na(x) & is.na(y) )
+ na.number <- sum(na.in.both)
+ na.which <- which(na.in.both)
+ message("Found ", na.number, " NA's at position(s):",
+ paste(na.which, collapse=", ") )
+
+ return( list(number=na.number, which=na.which) )
 }
-  sum(is.na(x) & is.na(y))
-}
-both_na2(x,y)
 ```
 
 ```{r}

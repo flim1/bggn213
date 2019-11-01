@@ -154,7 +154,7 @@ levels(g)
 plot(wisc.pr$x[,1:2], col=g)
 ```
 
-```{r}
+```{r eval=FALSE}
 library(rgl)
 plot3d(wisc.pr$x[,1:3], xlab="PC 1", ylab="PC 2", zlab="PC 3", cex=1.5, size=1, type="s", col=grps)
 rglwidget(width = 400, height = 400)

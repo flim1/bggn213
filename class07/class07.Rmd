@@ -1,0 +1,126 @@
+---
+title: "Class 7 R functions and packages"
+author: "Fabian Lim"
+date: "10/23/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+##Revisit our functions from last day
+
+```{r}
+source("http://tinyurl.com/rescale-R")
+```
+## Let's try our rescale function from last day
+
+```{r}
+rescale(1:10)
+```
+
+```{r}
+rescale(c(3, 10, NA, 7))
+```
+
+```{r}
+rescale2(c(3, 10, NA, 7, "barry"))
+```
+
+```{r}
+# Lets define an example x and y
+x <- c( 1, 2, NA, 3, NA)
+y <- c(NA, 3, NA, 3, 4)
+```
+
+```{r}
+is.na(x)
+```
+ 
+```{r}
+sum(is.na(x))
+```
+
+
+```{r}
+# Our working snippet
+sum(is.na(x) & is.na(y))
+```
+
+
+```{r}
+both_na <- function(x,y) {
+sum(is.na(x) & is.na(y))
+}
+```
+ 
+```{r}
+x <- c(NA, NA, NA)
+y1 <- c( 1, NA, NA)
+y2 <- c( 1, NA, NA, NA)
+```
+
+```{r}
+both_na(x, y1)
+```
+
+```{r}
+both_na(x, y2)
+```
+
+
+
+```{r}
+both_na2 <- function(x,y) {
+if(length(x) != length(y)) {
+  stop("Input vectors should be the same length")
+}
+  sum(is.na(x) & is.na(y))
+}
+both_na2(x,y)
+```
+
+```{r}
+grade <- function(student1, student2) {
+# student 1
+student1<- c(100, 100, 100, 100, 100, 100, 100, 90)
+# student 2
+student2 <- c(100, NA, 90, 90, 90, 90, 97, 80)
+# assign value 0 to NA
+student2[is.na(student2)] <- 0
+# sort scores in decreasing order
+sort(student1, decreasing=TRUE)
+sort(student2, decreasing=TRUE)
+# derive mean for top 7 scores
+mean(student1[1:7])
+mean(student2[1:7])
+}
+```
+
+```{r}
+grade(student1, student2)
+```
+
+

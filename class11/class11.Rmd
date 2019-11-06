@@ -1,0 +1,111 @@
+---
+title: "Class 11 Structural Bioinformatics"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# What is in the PDB database
+
+Download PDB statistics summary sorted by experimental method and molecular type
+
+```{r}
+data <- read.csv("Data Export Summary.csv")
+```
+
+Q. Determine the percentage of structures solved by X-Ray and Electron Microscopy
+ 
+```{r}
+sum(data$Total)
+```
+
+```{r}
+ans <- data$Total/sum(data$Total)*100
+names(ans) <- data$Experimental.Method
+ans
+round(ans,2)
+```
+
+Q. What proportion of structures are protein
+
+```{r}
+round(sum(data$Proteins)/sum(data$Total)*100, 2)
+```
+
+Q2: Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?
+3048
+
+# WOrking with biomolecular data in R
+
+```{r}
+library(bio3d)
+pdb <- read.pdb("1hsg")
+pdb
+```
+
+```{r}
+pdb$atom[1,"resid"]
+```
+
+```{r}
+aa321(pdb$atom[pdb$calpha,"resid"])
+```
+
+```{r}
+# Select all C-alpha atoms (return their indices)
+ca.inds <- atom.select(pdb, "calpha")
+ca.inds
+```
+
+```{r}
+# Print details of the first few selected atoms
+head(pdb$atom[ca.inds$atom,])
+```
+
+```{r}
+# Selected xyz coordinates
+head(pdb$xyz[, ca.inds$xyz])
+```
+
+Q8. Use the Bio3D write.pdb() function to write out a protein only PDB file for viewing in VMD. Also write out a second separate PDB file for the ligand with residue name MK1
+
+First select a protein and write out a file "1hsg_protein.pdb"
+```{r}
+prot <- atom.select(pdb, "protein", value=TRUE)
+write.pdb(prot, file="1hsg_protein.pdb")
+```
+
+Select ligand and write out a file
+```{r}
+lig <- atom.select(pdb, "ligand", value=TRUE)
+write.pdb(lig, file="1hsg_ligand.pdb")
+```
+
+```{r}
+# The 'devtools' package allows us to install development versions
+#install.packages("devtools")
+# Install the bio3d.view package from bitbucket
+#devtools::install_bitbucket("Grantlab/bio3d-view")
+```
+
+```{r}
+# Load the package
+library("bio3d.view")
+# view the 3D structure
+view(pdb, "overview", col="sse")
+```
+
+```{r}
+# Load the package
+pdb <- read.pdb("1hel")
+# Normal mode analysis calculation
+modes <- nma(pdb)
+m7 <- mktrj(modes,
+ mode=7,
+ file="mode_7.pdb")
+view(m7, col=vec2color( rmsf(m7) ))
+
+```
+

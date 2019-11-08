@@ -1,33 +1,62 @@
-Class 12: STructural Bioinformatics II
+Class 12: Structural Bioinformatics II
 ================
 
-## GitHub Documents
+## Prepare protein structure for docking
 
-This is an R Markdown format used for publishing markdown documents to
-GitHub. When you click the **Knit** button all R code chunks are run and
-a markdown file (.md) suitable for publishing to GitHub is generated.
-
-## Including Code
-
-You can include R code in the document as follows:
+We want to download the 1HSG PDB structure and then produce a
+“protein-only” and “ligand-only” new separate PDB files.
 
 ``` r
-summary(cars)
+library(bio3d)
+
+get.pdb("1hsg")
 ```
 
-    ##      speed           dist       
-    ##  Min.   : 4.0   Min.   :  2.00  
-    ##  1st Qu.:12.0   1st Qu.: 26.00  
-    ##  Median :15.0   Median : 36.00  
-    ##  Mean   :15.4   Mean   : 42.98  
-    ##  3rd Qu.:19.0   3rd Qu.: 56.00  
-    ##  Max.   :25.0   Max.   :120.00
+    ## Warning in get.pdb("1hsg"): ./1hsg.pdb exists. Skipping download
 
-## Including Plots
+    ## [1] "./1hsg.pdb"
 
-You can also embed plots, for example:
+Produce a “1hsg\_protein.pdb” and “1hsg\_ligand.pdb” file
 
-![](class12_files/figure-gfm/pressure-1.png)<!-- -->
+``` r
+pdb <- read.pdb("1hsg.pdb")
+pdb
+```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to
-prevent printing of the R code that generated the plot.
+    ## 
+    ##  Call:  read.pdb(file = "1hsg.pdb")
+    ## 
+    ##    Total Models#: 1
+    ##      Total Atoms#: 1686,  XYZs#: 5058  Chains#: 2  (values: A B)
+    ## 
+    ##      Protein Atoms#: 1514  (residues/Calpha atoms#: 198)
+    ##      Nucleic acid Atoms#: 0  (residues/phosphate atoms#: 0)
+    ## 
+    ##      Non-protein/nucleic Atoms#: 172  (residues: 128)
+    ##      Non-protein/nucleic resid values: [ HOH (127), MK1 (1) ]
+    ## 
+    ##    Protein sequence:
+    ##       PQITLWQRPLVTIKIGGQLKEALLDTGADDTVLEEMSLPGRWKPKMIGGIGGFIKVRQYD
+    ##       QILIEICGHKAIGTVLVGPTPVNIIGRNLLTQIGCTLNFPQITLWQRPLVTIKIGGQLKE
+    ##       ALLDTGADDTVLEEMSLPGRWKPKMIGGIGGFIKVRQYDQILIEICGHKAIGTVLVGPTP
+    ##       VNIIGRNLLTQIGCTLNF
+    ## 
+    ## + attr: atom, xyz, seqres, helix, sheet,
+    ##         calpha, remark, call
+
+``` r
+ligand <- atom.select(pdb, "ligand", value=TRUE)
+write.pdb(ligand, file="1hsg_ligand.pdb")
+```
+
+``` r
+protein <- atom.select(pdb, "protein", value=TRUE)
+write.pdb(protein, file="1hsg_protein.pdb")
+```
+
+## Process docking results
+
+``` r
+res <- read.pdb("all.pdbqt", multi=TRUE)
+write.pdb(res, "results.pdb")
+```

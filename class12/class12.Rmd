@@ -1,5 +1,5 @@
 ---
-title: "Class 12: STructural Bioinformatics II"
+title: "Class 12: Structural Bioinformatics II"
 output: github_document
 ---
 
@@ -7,24 +7,37 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## GitHub Documents
+## Prepare protein structure for docking
 
-This is an R Markdown format used for publishing markdown documents to GitHub. When you click the **Knit** button all R code chunks are run and a markdown file (.md) suitable for publishing to GitHub is generated.
+We want to download the 1HSG PDB structure and then produce a "protein-only" and "ligand-only" new separate PDB files.
 
-## Including Code
+```{r}
+library(bio3d)
 
-You can include R code in the document as follows:
-
-```{r cars}
-summary(cars)
+get.pdb("1hsg")
 ```
 
-## Including Plots
+Produce a "1hsg_protein.pdb" and "1hsg_ligand.pdb" file
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+pdb <- read.pdb("1hsg.pdb")
+pdb
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+ligand <- atom.select(pdb, "ligand", value=TRUE)
+write.pdb(ligand, file="1hsg_ligand.pdb")
+```
+
+```{r}
+protein <- atom.select(pdb, "protein", value=TRUE)
+write.pdb(protein, file="1hsg_protein.pdb")
+```
+
+## Process docking results
+
+```{r}
+res <- read.pdb("all.pdbqt", multi=TRUE)
+write.pdb(res, "results.pdb")
+```
+

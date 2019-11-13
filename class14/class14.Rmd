@@ -1,0 +1,252 @@
+---
+title: "Class 14"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+##Setup Bioconductor DESeq2
+
+```{r eval=FALSE}
+install.packages("BiocManager")
+BiocManager::install()
+n to update all/some/none
+BiocManager::install("DESeq2")
+```
+
+## Data for todays class
+
+```{r}
+counts <- read.csv("airway_scaledcounts.csv", stringsAsFactors=F)
+metadata <- read.csv("airway_metadata.csv", stringsAsFactors = F)
+```
+
+Lets have a peak..
+```{r}
+head(counts)
+```
+
+How many genes do we have in this dataset?
+```{r}
+nrow(counts)
+```
+
+How many experiments
+```{r}
+ncol(counts)-1
+```
+
+Lets make sure metadata id col matches the colnames of counts
+```{r}
+all(colnames(counts)[-1] == metadata$id)
+```
+
+The all funciton is useful for looking across a vector of logicals
+```{r}
+all(c(F,T,T))
+all(c(T,T,T))
+```
+
+## Analysis: compare the control to drug treated
+
+First we need to access the columns of our countData that are control and ten find their mean
+
+```{r}
+metadata$dex=="control"
+```
+
+```{r}
+control.id <- metadata[metadata$dex=="control", ]$id
+control.id
+```
+
+```{r}
+head(counts[,control.id])
+```
+
+Mean counts for control exps
+
+
+```{r}
+control.mean <- rowSums(counts[,control.id])/length(control.id)
+names(control.mean) <- counts$ensgene
+```
+
+
+## Treated samples
+
+```{r}
+metadata$dex=="treated"
+```
+
+```{r}
+treated.id <- metadata[metadata$dex=="treated", ]$id
+treated.id
+```
+
+
+```{r}
+head(counts[,treated.id])
+```
+
+Mean counts for treated exps
+
+
+```{r}
+treated.mean <- rowSums(counts[,treated.id])/length(treated.id)
+names(treated.mean) <- counts$ensgene
+```
+
+Lets store these together
+
+```{r}
+meancounts <- data.frame(control.mean, treated.mean)
+```
+
+Plot control vs treated
+
+```{r}
+plot(meancounts$control.mean, meancounts$treated.mean)
+```
+
+Good case for a log plot
+
+```{r}
+plot(meancounts$control.mean, meancounts$treated.mean, log="xy")
+```
+
+
+## Fold change
+
+```{r}
+meancounts$log2fc <- log2(meancounts[, "treated.mean"]/meancounts[, "control.mean"])
+head(meancounts)
+```
+
+There are a couple of “weird” results. Namely, the NaN (“not a number”“) and -Inf (negative infinity) results.
+
+The NaN is returned when you divide by zero and try to take the log. The -Inf is returned when you try to take the log of zero. It turns out that there are a lot of genes with zero expression. Let’s filter our data to remove these genes. Again inspect your result (and the intermediate steps) to see if things make sense to you
+
+```{r}
+#Test for finding zero entries
+
+x <- c(5,8,0,5)
+x==0
+which(x==0)
+x <-data.frame(happy=c(5,6,0,0), sad=c(0,5,5,0))
+x==0
+```
+
+```{r}
+which(x==0, arr.ind=TRUE)
+```
+
+Focus on the rows only that have zero entries
+
+```{r}
+unique(which(x==0, arr.ind=TRUE)[,1])
+```
+
+Think pair share
+
+```{r}
+x <-data.frame(happy=c(6,3,2,0), sad=c(5,0,5,0))
+x==0
+```
+
+```{r}
+which(x==0, arr.ind=TRUE)
+```
+
+```{r}
+unique(which(x==0, arr.ind=TRUE)[,1])
+```
+
+Now do this for our meancounts data, i.e. remove zero containing genes from further consideration
+
+```{r}
+to.rm <- unique(which(meancounts[,1:2]==0, arr.ind=TRUE)[,1])
+mycounts <- meancounts[-to.rm,]
+head(mycounts)
+```
+
+A common threshold used for calling something differentially expressed is a log2(FoldChange) of greater than 2 or less than -2. Let’s filter the dataset both ways to see how many genes are up or down-regulated.
+
+```{r}
+up.ind <- mycounts$log2fc > 2
+down.ind <- mycounts$log2fc < (-2)
+```
+
+```{r}
+sum(up.ind)
+```
+
+```{r}
+sum(down.ind)
+```
+
+```{r}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+```
+
+See what is available in org.Hs
+
+```{r}
+columns(org.Hs.eg.db)
+```
+
+```{r}
+mycounts$symbol <- mapIds(org.Hs.eg.db,
+                     keys=row.names(mycounts),
+                     column="SYMBOL",
+                     keytype="ENSEMBL",
+                     multiVals="first")
+```
+
+```{r}
+head(mycounts)
+```
+
+# DESeq2 analysis
+
+```{r}
+library(DESeq2)
+```
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData=counts, 
+                              colData=metadata, 
+                              design=~dex, 
+                              tidy=TRUE)
+dds
+```
+
+```{r}
+dds <- DESeq(dds)
+```
+
+```{r}
+res <- results(dds)
+res
+```
+
+# Volcano plot
+
+```{r}
+plot(res$log2FoldChange, res$padj)
+```
+
+```{r}
+mycols <- rep("gray", length(res$padj))
+mycols[ abs(res$log2FoldChange) >2] = "blue"
+mycols[(res$padj > 0.05) & (abs(res$log2FoldChange) >2)] = "red"
+plot(res$log2FoldChange, -log(res$padj), col=mycols)
+```
+
+
+
